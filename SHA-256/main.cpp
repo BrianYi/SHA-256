@@ -287,7 +287,7 @@ void CalculatePasswordHash(const TCHAR *password, PasswordHashType type, Passwor
 	memcpy(ph->salt, buffer, PASSWORD_SALT_LENGTH);
 }
 
-#define bin2hex(x) ((x) < 10 ? ((x) + _T('0')) : ((x) + (_T('A') - 10)))
+//#define bin2hex(x) ((x) < 10 ? ((x) + _T('0')) : ((x) + (_T('A') - 10)))
 #define hex2bin(x) ((((x) >= '0') && ((x) <= '9')) ? ((x) - '0') : \
                     (((toupper(x) >= 'A') && (toupper(x) <= 'F')) ? (toupper(x) - 'A' + 10) : 0))
 
@@ -295,11 +295,12 @@ WCHAR *BinToStrW(const BYTE *pData, size_t size, WCHAR *pStr)
 {
 	size_t i;
 	WCHAR *pCurr;
+    const char* kHEXChars = { "0123456789ABCDEF" };
 
 	for (i = 0, pCurr = pStr; i < size; i++)
 	{
-		*pCurr++ = bin2hex(pData[i] >> 4);
-		*pCurr++ = bin2hex(pData[i] & 15);
+		*pCurr++ = kHEXChars[pData[i] >> 4];
+		*pCurr++ = kHEXChars[pData[i] & 0xF];
 	}
 	*pCurr = 0;
 	return pStr;
@@ -310,11 +311,12 @@ char *BinToStrA(const BYTE *pData, size_t size, char *pStr)
 {
 	size_t i;
 	char *pCurr;
+    const char* kHEXChars = { "0123456789ABCDEF" };
 
 	for (i = 0, pCurr = pStr; i < size; i++)
 	{
-		*pCurr++ = bin2hex(pData[i] >> 4);
-		*pCurr++ = bin2hex(pData[i] & 15);
+		*pCurr++ = kHEXChars[pData[i] >> 4];
+		*pCurr++ = kHEXChars[pData[i] & 0xF];
 	}
 	*pCurr = 0;
 	return pStr;
@@ -378,6 +380,14 @@ bool validatePassword(const TCHAR *password, PasswordHash& passwordhash)
 **  根据salt不同，同样的明文可以生成不同的密码
 **  $A + salt + SHA-256-hash(salt + password)
 **  2 + 2 * 8 + 2 * (256/8) = 82 bytes
+**
+**  顺便一提：简单的binary to hex的方法
+**  const char* kHEXChars = { "0123456789ABCDEF" };
+**  for (i = 0, pCurr = pStr; i < size; i++)
+**  {
+**      *pCurr++ = kHEXChars[pData[i] >> 4];
+**      *pCurr++ = kHEXChars[pData[i] & 0xF];
+**  }
 */
 int main()
 {
